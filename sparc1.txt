@@ -1,0 +1,288 @@
+AutoCAD Release 12 SPARCstation Q & A
+
+
+Q.  Why doesn't the TAB key allow me to cycle through data
+fields in the OpenWindows AutoCAD dialog boxes?
+
+A.  By default, OpenWindows only allows limited keyboard
+support in it's dialog boxes (unlike the MS-DOS version of
+AutoCAD, the Sun version uses the operating system's native
+dialog boxes).  To allow the TAB key to work, add the
+following line to your .Xdefault file (located in your home
+directory)
+
+     OpenWindows.KeyboardCommands: Full
+
+Pay close attention to capitalization.  Unlike MS-DOS, UNIX
+is case sensitive.
+
+
+Q. Why does clicking with the left mouse button on a
+pulldown menu only activate the first command of the
+pulldown without causing the menu to pop down?
+
+A.  Since AutoCAD for the SPARCstation uses the dialog boxes
+that are native to OpenWindows, the functioning of the mouse
+buttons is different than what you would expect if you are
+accustomed to MS-DOS AutoCAD.
+
+To pop the menu down you need to right click on the menu
+button;  then left click on the command you want to execute.
+
+Page 96 of the Release 12 Sun SPARCstation AutoCAD
+Interface, Installation, and Performance Guide goes into
+more detail on the functions of the mouse in OpenWindows.
+
+
+Q.  Why don't the OpenWindows pulldown menus "remember" the
+last command I picked like the MS-DOS version of AutoCAD
+does?
+
+A.  AutoCAD on the SPARCstation doesn't support that
+particular function.
+
+
+
+Q.  I've set up plot spooling as per the instructions in the
+installation guide, but my plot files remain in the plot
+spool directory after plotting and must be deleted manually.
+Why?
+
+A.  Specifying AUTOSPOOL as a plot file name tells AutoCAD
+to plot to a file in a user specified location, usually
+/usr/spool/acad, and execute the command specified by the
+ACADPLCMD environment variable.  The example given by
+Autodesk in the installation guide is a bare minimum;  you
+will almost certainly need to expand upon it for your
+installation.
+
+For the sake of example, let's say you wish to plot your
+files on a plotter called localplot (this is defined in the
+/etc/printcap file).  Your statement defining ACADPLCMD
+might look like this:
+
+     setenv ACADPLCMD "lpr -Plocalplot -r -s %s"
+
+Here's why:
+
+The SPARCstation uses a command called lpr to print files.
+Like many UNIX commands, lpr has a whole slew of command
+line options that could fill up a whole article.  In this
+case we are concerned with three of them:  -P, -r and -s.
+
+-P tells lpr which printer to use.  As we said, the printer
+name in our example is localplot.  Note that there is no
+space between -P and the printer name!  This small detail
+can cause big headaches.
+
+-r is the solution to the question here - it tells lpr to
+delete each file after it has been sent to the plotter.
+
+-s is not necessary, but it's a good option to know about.
+When you print a file, a copy of it is created in the plot
+spool directory.  If you run out of disk space for the plot
+spool directory, you can't print anymore.  The -s option
+causes the copy of the file in the plot spool directory to
+be just a link, instead of an actual copy of the file.  That
+means you can keep on printing without using up extra disk
+space.  This can be particularly useful if your printers and
+plotters go offline a lot;  all those plots waiting for the
+plotter to come back can eat up a huge amount of disk space.
+
+The %s is an option to AutoCAD, not to lpr.  When AutoCAD
+sees the %s, it replaces the %s with the name of the plot
+file before it passes the rest of the string to the
+operating system for execution.
+
+
+Q. When  trying to start up AutoCAD I get the following
+error:
+
+     Xlib:  connection to ":0.0" refused by server
+     Xlib:  Client is not authorized to connect to server
+     XView error: Cannot open connection to window server:
+:0.0 (Server package)
+     Xlib:  connection to ":0.0" refused by server
+     Xlib:  Client is not authorized to connect to server
+     XView error: Cannot open connection to window server:
+:0.0 (Server package)
+     rcacadd is not an ADI driver.
+
+
+     FATAL ERROR:  No display driver
+
+
+
+     FATAL ERROR:  No display driver
+
+A.  This error occurs when one user is running OpenWindows
+and a different user attempts to run AutoCAD on the same
+workstation.  This usually happens when a user logs in, su's
+to superuser, and then tries to start AutoCAD while he/she
+is still superuser.  The solution is to just exit out of
+superuser with exit or use the suspend command to return to
+the original user id.
+
+
+Q.  How can I get my MS-DOS AutoCAD drawings to my new
+SPARCstation and do I need to use any conversion (like DXF)?
+
+A.  Since Release 9, all AutoCAD versions have been able to
+read and write each other's drawing files directly with no
+conversion needed.  Physically getting the file onto the
+SPARCstation, however, can be more difficult.
+
+The most common method of transferring files between
+platforms is via a network.  Most CAD shops that have a mix
+of Suns and PCs use an Ethernet network with the Suns as
+severs and the PCs running Sun's PC-NFS software.  In this
+environment, transferring files is as easy as copying from
+one machine to another with the MS-DOS copy command.  Ask
+your site system administrator for specific details on how
+to do this at your site.
+
+If you don't have a network, though, all is not lost.  Sun
+machines that have a 3 1/2" floppy drive (IPC, IPX, SPARC
+II, and others) will directly read and write a MS-DOS
+formatted diskette.  First, copy the drawing file to a 3
+1/2" floppy disk on the MS-DOS machine.  Now, insert the MS-
+DOS floppy into the Sun's floppy drive.  To access the MS-
+DOS floppy, you must first mount the disk onto your system.
+The command to use in most installations is:
+
+     mount /pcfs
+
+Note that you must be superuser to use the mount command, so
+you might need to have your system administrator do this for
+you.  After the floppy is mounted, you can read and write it
+using standard UNIX commands.  When you are finished using
+the floppy, execute umount /pcfs (again, this may only be
+done by the superuser) and then execute eject, which will
+cause the floppy to be ejected from the drive.
+
+
+Q.  I've just set up a new SPARCstation and installed
+AutoCAD.  When I try to start AutoCAD I get an error
+message:
+
+     Unable to obtain shared memory.
+     Unable to obtain semaphores.
+
+A.  Many of the features of AutoCAD Release 12 use ADS, and
+ADS requires something called inter-process communication
+(IPC) to be configured in the system kernel.  The system
+kernel is the heart of the UNIX operating system, and some
+Sun systems ship with IPC disabled.  Enabling IPC requires a
+reconfiguration and recompile of the kernel and a reboot.
+
+WARNING:  IT IS STRONGLY RECOMMENDED THAT KERNEL
+RECONFIGURATION BE DONE BY YOUR DEALER OR A SUN SUPPORT
+ENGINEER.  IF YOUR KERNEL IS NOT CONFIGURED CORRECTLY YOU
+MAY CRASH YOUR ENTIRE NETWORK AND NOT BE ABLE TO BOOT YOUR
+MACHINE WITHOUT RELOADING YOUR OPERATING SYSTEM SOFTWARE.
+
+Because of the danger involved in re configuring the system
+kernel, Autodesk omitted the steps needed to reconfigure the
+kernel in the Release 12 documentation.  The Release 11 Sun
+SPARCstation guide does document the procedure.
+
+All these steps require you to be logged in as superuser and
+have knowledge of a system editor.
+
+1.  As superuser, move to the directory containing the
+kernel configuration file.  The default for a SPARCstation
+is /usr/sys/sun4c/conf.
+
+     cd /usr/sys/sun4c/conf
+
+2.  Create a copy of the GENERIC_SMALL file and name it
+GENERIC_IPC.  Use chmod to modify the permissions of the
+file to allow editing.  NOTE:  This assumes a new system
+that is using the default kernel.  If your system has
+special hardware that requires kernel reconfiguration,
+GENERIC_SMALL *may* not be the correct file to use.  See
+your SUN dealer (or the person who configured your existing
+kernel, if it wasn't your dealer).
+
+     cp GENERIC_SMALL GENERIC_IPC
+     chmod +w GENERIC_IPC
+
+3.  Edit GENERIC_IPC with a system editor such as vi.
+
+     vi GENERIC_IPC
+
+4.  Find and change the identification line in the file.
+
+     ident "GENERIC_SMALL"
+
+    Change the line above to:
+
+     ident "GENERIC_IPC"
+
+5.  Find and change the three lines that enable IPC.
+
+     #options IPCMESSAGE      # System V IPC message
+facility
+     #options IPCSEMAPHORE    # System V IPC semaphore
+facility
+     #options IPCSHMEM        # System V IPC shared-memory
+facility
+
+The number sign (#) at the beginning of a line means it is
+commented out, or inactive.  Remove the # from the beginning
+of these lines.
+
+     options IPCMESSAGE       # System V IPC message
+facility
+     options IPCSEMAPHORE     # System V IPC semaphore
+facility
+     options IPCSHMEM         # System V IPC shared-memory
+facility
+
+6.  If you plan on supporting diskless clients, you might
+need to add the following lines under the section of the
+configuration file dealing with streams NIT support:
+
+     pseudo-device snit       # streams NIT
+     pseudo-device pf              # packet filter
+     pseudo-device nbuf       # NIT buffering module
+
+7.  Save the edited file and exit the editor.
+
+8.  Use config and make to create and install the new
+kernel.  This assumes that config is in the /etc directory
+and make is in the path.
+
+     /etc/config GENERIC_IPC
+     cd ../GENERIC_IPC
+     make
+
+WARNING:  If any error messages are generated during config
+or make, stop the procedure and contact your system
+administrator or your SUN dealer.
+
+9.  Rename the current kernel /vmunix to /vmunix.old and
+copy the new kernel to the root directory.
+
+     mv /vmunix /vmunix.old
+     cp vmunix /vmunix
+
+10.  Reboot the system.
+
+     /etc/reboot
+
+The reboot command will reboot the system with the new
+vmunix kernel.  You should see GENERIC_IPC as the name of
+the new kernel during boot.
+
+If the system won't boot, re-boot the system from your SunOS
+CD-ROM distribution disk, copy the old kernel back to
+/vmunix, and try again!  See the Sun System Installation
+Guide for instructions on booting from CD-ROM.
+
+After you are absolutely sure the new kernel is working
+correctly, delete the old one (/vmunix.old) as they take up
+quite a bit of disk space.
+
+
+Copyright (C) 1993 by Mike Sisk

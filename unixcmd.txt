@@ -1,0 +1,298 @@
+This month's topic is the basic UNIX commands you need to
+know if you are just learning to use a UNIX CAD workstation.
+Our goal was to make this discussion basic enough for a
+first time computer user, but to also provide some useful
+information for an experienced MS-DOS user.  The commands we
+chose to cover are mostly related to file manipulation, but
+there are some other miscellaneous commands which we think
+you will find useful.  These are not exhaustive
+descriptions;  in almost every case, there are options we
+haven't included in order  to simplify our discussion.  At
+some point you'll probably want to consult your system
+documentation to find out what else you can do with these
+commands, but the information contained here will get you
+started and allow you to be productive with your new
+workstation.
+
+First, a little background for the true neophyte:  When you
+save an AutoCAD drawing, a file is created which contains
+all the information AutoCAD has about that drawing.  Files
+have names, which is how you tell AutoCAD what drawing file
+you want to work with.  When you save a drawing for the
+first
+time, you tell AutoCAD what name it should use.  Files are
+stored in directories.  A good way to understand this is to
+use the Apple Macintosh approach: a file is like a piece of
+paper, and a directory is like a file folder.  A directory
+may contain any number of files, and/or any number of
+directories, or it may be empty.  Every UNIX user has a home
+directory, which becomes their current working directory
+when they first log in.
+
+A 'path' is a list of directories which leads to a
+destination.  A file name may be specified in two ways:  the
+name of the file alone, or the path which leads to the
+directory containing the file, plus the name of the file.
+This is called a 'fully-qualified' filename.  As an example:
+if 'stuff' is a filename, then '/home/user1/stuff' is a
+fully-qualified filename.  It means that in the directory
+'/home' there is a directory called 'user1', and in that
+directory user1 there is a file called 'stuff'.  Directory
+names are separated by forward slashes.  The top-level
+directory, also known as the root directory, is represented
+by a single forward slash '/'.  If a pathname starts with a
+forward slash, it is called an absolute pathname, because it
+starts from the root directory.  If it doesn't, it's called
+a relative pathname, because it is assumed to start from the
+current working directory of the user specifying it.
+
+Wildcards are characters which can be used to specify a
+group of files at once without typing out all their names.
+'*' matches zero or more characters,and '?' matches one
+character.  These can be combined with pathnames in the same
+way filenames can be, or they can be used alone to select
+filenames in the current directory.  For example:
+  *.dwg  =  all files in the specified directory with names
+  ending in .dwg.  This
+                   could include a files whose whole name
+  is '.dwg'.
+  *           =  all files in the specified directory.
+  /home/drawings/a???.dwg  =  all files in the directory
+  '/home/drawings' which
+                   begin with the letter 'a', followed by
+  three characters (what they
+                  are doesn't matter, as long as there are
+  three of them), followed by
+                  '.dwg'.
+
+cd  (change directory) and pwd (print working directory)
+  Whenever you are logged into a UNIX system, you are
+  'sitting in' a directory.  At any given time, the
+  directory you are in is called the working directory.  If
+  you execute 'pwd' at the UNIX prompt it will tell you
+  what directory you are in.  To change directories,
+  execute 'cd' followed by the name of the directory you
+  wish to go to.  If you execute 'cd' all by itself, it
+  will take you to your home directory.  If you want to go
+  up one level in the path, execute 'cd ..'.  '..'  stands
+  for the directory above the current directory, sometimes
+  called the parent directory.  If you are in '/', the root
+  directory, there is no parent directory.  Executing 'cd
+  ..' from the root directory has no effect.
+    Examples:
+      jurassic% pwd
+      /files/home/mike
+      jurassic% cd /files/dwgs
+      jurassic% pwd
+      /files/dwgs
+      jurassic% cd ..
+      jurassic% pwd
+      /files
+      jurassic% cd home/mike
+      jurassic% pwd
+      /files/home/mike
+
+ls  (list)
+  The ls command allows you to list the contents of a
+  directory.  If you execute 'ls' by itself, it will show
+  you the contents of the current (working) directory.  If
+  you execute 'ls' followed by a filename, it will show you
+  that file.  If you execute 'ls' followed by a directory
+  name, it will show you the contents of the directory.
+  This can be a bit disconcerting if you're not expecting
+  it!  To see the directory entry itself, use 'ls -d'.  If
+  you enter a name which does not exist, 'ls' will tell you
+  it can't find it.  There are many options to 'ls';  the
+  most useful is '-l', which gives you a "long" listing.
+  This includes the permissions on the file (a topic which
+  is beyond the scope of this article), the owner of the
+  file, the size of the file, and the date and time when
+  the file was last changed.  The '-a' option shows "all"
+  files, including files whose names begin with a period
+  '.', which are normally "hidden", or not shown by 'ls'.
+  These are usually initialization files, like .login.
+
+    Examples:
+       jurassic% cd /files
+      jurassic% ls
+      acad        dwgs        local       spool
+      dos         home        lost+found
+      jurassic% ls local
+      bin      cnews    gcc-2.0  lib      news     newsbin
+sbbs     spool
+      jurassic% ls -l
+      drwxrwxrwx 17 bin           512 Dec 29 11:02 acad
+      drwxrwxrwx 17 bin           512 Feb 11 12:21 dos
+      drwxrwx--- 11 bin           512 Feb 15 16:22 dwgs
+      drwxr-xr-x  4 root          512 Feb  9 18:02 home
+      drwxr-xr-x 10 root          512 Feb 10 17:15 local
+      drwxr-xr-x  2 root         8192 Feb  4 12:59
+lost+found
+      drwxr-sr-x 16 bin           512 Feb 10 09:45 spool
+      jurassic% ls notthere
+      notthere not found
+
+mkdir (make directory)
+  The mkdir command creates new directories.  If you give
+  it a pathname, ending in a name which doesn't already
+  exist, it will create the new directory using that path
+  and filename.  If you just give it a name, with no path
+  attached, and that name doesn't already exist in the
+  current directory, then it will create the new directory
+  in the current directory.
+
+   Examples:
+     jurassic% mkdir /files/home/mike/newdir   -  creates
+a directory called
+
+'newdir' in the directory
+
+'/files/home/mike'.
+   jurassic% mkdir newdir                      -  creates a
+directory called
+
+'newdir' in the current
+
+working directory.
+   jurassic% mkdir newdir
+   mkdir: newdir: File exists                   -  this will
+happen if the
+
+filename you gave mkdir
+
+already existed in the
+
+specified directory.
+   jurassic% mkdir newdir
+   mkdir: newdir: Permission denied            -  this will
+happen if you try
+
+to create a directory in a
+
+directory where you do not
+
+have permission to do so.
+
+rm (remove) and rmdir (remove directory)
+  The Tcommands rm and rmdir delete files and directories
+  from your system.  Be very careful with these commands!
+  Those of you who are familiar with MS-DOS may know that
+  it is very easy to undelete a file if you delete one
+  accidentally.  This is not the case in UNIX!!!  Once you
+  delete something it is gone, unless you have a current
+  backup.
+  
+   The rm command removes files.  Executing 'rm
+  <filenames>' will remove all the files in the list
+  <filenames>, except for those which you do not have
+  permission to remove.  There are two options to rm which
+  you may find useful.  '-i' will make rm execute
+  interactively, prompting you to enter "y" or "n" before
+  each file is removed.  This can be useful to safeguard
+  against accidental deletions, and it can also be used as
+  a shortcut:  if you want to delete most of the files in a
+  directory but not all of them, you can execute 'rm -i *',
+  and then answer "n" to the few files you want to keep,
+  and "y" to the rest.  '-r' stands for recursive, and it's
+  used when you want to remove a directory and all of the
+  files and directories it contains.  Be especially careful
+  with this one!!  It's very handy, but if you execute 'rm
+  -r *' from the wrong place, like the root directory, it
+  can have disastrous consequences!
+  
+  The rmdir command removes directories.  A directory must
+  be empty before rmdir can remove it.  If you think a
+  directory is empty, but rmdir tells you it's not, try
+  executing 'ls -a <dirname>';  you may find that it has
+  some hidden files in it.  rmdir is safer than rm, for
+  obvious reasons.
+
+cp (copy)
+  The cp command copies files and directories.  It may be
+  used several different ways:  to make a copy of a file
+  with a different name, to copy one or more files into a
+  directory, or to copy a directory and all it's contents
+  into another directory.  In all cases, the source files
+  and/or directories are not changed in any way.
+  
+  To copy a file to a different name, execute 'cp <source>
+  <destination>', where <source> is the name of the
+  original file, and <destination> is the name you want the
+  copy to have.  If the destination name already exists, it
+  will be overwritten unless you do not have permission to
+  do so.  If not, you will get a message from cp telling
+  you that the file already exists.  Wildcards may not be
+  used with this form of cp, and this is one of the few
+  areas where UNIX is not as powerful as MS-DOS.  In MS-
+  DOS, you can do something like this:  'copy *.dwg *.sav'.
+  This won't work in UNIX.  It's possible to write a small
+  program which will allow you to do this, but that  is
+  beyond the scope of this article.
+  
+  To copy one or more files into a directory, execute 'cp
+  <source files>  <destination directory>'.  You may use
+  wildcards to specify the files, but not to specify the
+  directory.  If one of the names you specify for source
+  files is really a directory, cp will tell you that it was
+  a directory and that it was not copied, and will copy the
+  rest of the files normally.
+  To copy a directory and it's contents into another
+  directory, execute 'cp -r <source directory> <destination
+  directory>'.  The source directory name will be used to
+  create a new directory under the destination directory,
+  and the contents of the source directory will be copied
+  into the new directory.  If the destination directory
+  already exists, it will be overwritten, unless you do not
+  have permission to do so.
+  
+  All these forms of cp may be used with the '-i' option,
+  which will cause cp to execute interactively and ask you
+  to enter "y" or "n" before it copies each file or
+  directory.
+
+mv (move)
+  The mv command renames files and directories, and can
+  move one or more files from one directory to another.
+  Since the files are being moved, not copied, the source
+  file or directory will no longer exist after the move is
+  complete.  In all cases, if the destination filename
+  exists, it will be overwritten  unless you do not have
+  permission to do so.
+  
+  To rename a file, execute 'mv <source> <destination>'.
+  Wildcards may be used to specify the source filename, as
+  long as only one filename is selected by the pattern
+  given.  If more than one filename matches the pattern, mv
+  will display a usage statement, which is it's cryptic way
+  of telling you that something was wrong with what you
+  typed.
+  
+  To rename a directory to a new name in the directory in
+  which it currently resides, execute 'mv <source>
+  <destination>', where both names are relative to the
+  current directory;  in other words, no pathnames are
+  specified.  The rules for wildcarding with filenames
+  apply here.
+  
+  To move a directory to a new name in a directory other
+  than the one in which it currently resides, execute 'mv
+  <source> <destination>', where the destination pathname
+  is fully-qualified;  i.e., it has a full pathname
+  specified.  The same wildcarding rules apply here.
+  
+  To move a group of files into a single directory, execute
+  'mv <source files>  <destination directory>'.  Wildcards
+  may be used to specify the files, but not the directory.
+  
+
+There!  That's it for this month.  This is a huge topic, and
+there will be more articles like this one in the future.  If
+there are any other topics you'd like to see us cover,
+please let us know via e-mail or write to CADalyst and
+they'll pass your suggestions on to us.  The intent of this
+column is to help as many people as possible, so let us know
+what you'd like to read about!
+
+
+
+Copyright (C) 1993 by Mike Sisk

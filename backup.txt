@@ -1,0 +1,382 @@
+This month's topic is the ever-important Backup.  A backup
+is a copy of  the files on your system, which can be used to
+recover from emergencies like disk crashes and over-
+enthusiastic experimentation with
+'rm -r *'.  Many companies have a System Administration
+department to take care of doing routine backups, but it is
+still worthwhile to know how to do one.   The importance of
+your drawing files can't be underestimated.  Every UNIX
+system should have some sort of file backup procedure in
+place.
+
+
+Those of you who are familiar with MS-DOS know that on a MS-
+DOS system you can format a floppy disk and then copy files
+to it just like it was a second hard disk.  You probably
+wouldn't want to do a full system backup that way, but for a
+few files it works well.  Unfortunately, you can't do that
+on a UNIX system.  Many UNIX system vendors don't include
+floppy drives at all, and those who do treat them more like
+tapes than disks.  Floppies also don't hold very much in
+UNIX-land;  you'd be lucky to fit one decent-sized drawing
+on a standard high-density floppy.  But with the utilities
+described below, you can put your files on several floppies
+without having to figure out yourself  how it will all fit.
+In the discussion below we refer to tapes, but everything
+said applies equally to floppies.
+  
+Pathnames are included with filenames, and backups are
+always recursive.  This means that if  one or more of the
+filenames you specify to be backed up is really a directory,
+the entire directory structure from that point on down,
+files and directories, will be backed up.  It is important
+to be careful when specifying pathnames, to be sure you get
+what you really want on the tape.  When files are restored
+from a backup tape they will be created just as they were
+specified, pathnames included.  So if you use absolute
+pathnames (those beginning with '/', the root directory)
+then the entire path of directory names from '/' to the
+filename itself must exist before the file can be restored.
+This can be a real pain, especially if you are restoring a
+tape made on another system!  It is usually better to
+specify files with relative pathnames, which do not begin
+with '/'.  In this case the path of directory names still
+must exist, but you are no longer restricted to having it
+begin at the root level.  For example:  if we back up
+/home/acad/dwgs, then it must be restored as
+/home/acad/dwgs;  I have no control over it.  But if we back
+up home/acad/dwgs (or better yet, just dwgs), we can restore
+it anywhere.  If we restore it to home directory
+/usr/mike, we will then have /usr/mike/home/acad/dwgs
+(or /usr/mike/dwgs).  Relative pathnames give you more
+control, and everyone wants that, don't they?
+
+There are at least as many ways of naming tape devices as
+there are UNIX system vendors, and probably more since most
+of them aren't consistent across product lines.  Please ask
+someone knowledgeable about your particular system what the
+tape and floppy devices are called.
+
+There are four more-or-less standard backup utilities in
+UNIX.  Two are available on all UNIX systems, one is
+available on most UNIX systems, and one is (as far as I
+know) only available on pre-Solaris 2.0 Sun workstations.
+We will address them in that order.  As usual, there are
+numerous options to each utility, and we can't possibly
+cover them all, but this should be enough to get you
+started.
+
+A big potential gotcha to look out for:  it would be most
+logical to assume that using the wildcard '*' to specify
+filenames when restoring  would restore all the files on the
+tape.  But it doesn't!  The command interpreter (also known
+as the shell) takes the line you typed in and expands any
+wildcard characters before the command is executed.  That
+means that it takes the asterisk (usually called star) and
+replaces it with a list of all the filenames in the current
+directory, and that is what is extracted from the tape.
+Probably not quite what you wanted!  On some systems, you
+can do this correctly by  'escaping' the star.  That means
+you need to mark it so that the shell knows that you don't
+want it to be expanded.  The escape character is the
+backwards slash '\'.  So your filename specification would
+be '\*', or '*.dwg', etc..  But this doesn't always work,
+and if it doesn't, you just won't be able to use wildcards.
+There are other workarounds, but they are too complex to
+cover here.
+tar:
+  Stands for Tape ARchive (yes, UNIX has lots of funny
+  command names!).  tar takes a list of filenames and
+  conglomerates the files together into one huge file,
+  which it then sends out to the backup device you specify.
+  
+  Command format:     tar <options> <output device> <filenames>
+  
+  Options:  x  -  eXtract the named files from the tape
+            c  -  Create a new tape archive containing the named files
+            t  -  lisT the contents of the tape archive
+                  (ok, I'm reaching, but what would you call it?)
+            v  -  Verbose mode - print each filename as it's processed
+                  (optional)
+            f  -  the device File to use will be specified (instead 
+                  of using the default, which is rarely right)
+  
+            It's important that f be last, because it must be followed
+            immediately by the device name.
+  
+  Examples: Let's assume that our tape device name is /dev/rst0.
+  
+            Our current working directory contains the following files:
+                jurassic%  ls
+                file1  file2  file3  file4
+  
+            We want to put just a few of  those files on tape:
+                jurassic%  tar cvf /dev/rst0 file2 file4
+                a  file2  348 blocks
+                a  file4  158 blocks
+  
+            We want to put all those files on tape:
+                jurassic%  tar cvf /dev/rst0 *
+                a  file1  100 blocks
+                a  file2  348 blocks
+                a  file3  20 blocks
+                a  file4  158 blocks
+  
+            Now we want to see what is on the tape:
+                jurassic%  tar tf  /dev/rst0
+                file1
+                file2
+                file3
+                file4
+  
+            Maybe we need to restore all the files on the tape:
+                jurassic%   tar xvf /dev/rst0
+                x file1
+                x file2
+                x file3
+                x file4
+  
+            Or just a few:
+                jurassic%  tar xvf /dev/rst0 file2 file3
+                x file2
+                x file3
+cpio:
+  Stands for "copy in/out".  There are two new concepts
+  here besides cpio : a pipe, and input/output redirection.
+  Output from a command can be 'piped' into another command
+  by separating the two with the pipe symbol '|'.  In this
+  case, the only way cpio can accept a list of filenames to
+  back up is through a pipe, so the filenames come before
+  the command.  Output of a command can also be redirected
+  to a file or a device by using the output redirection
+  symbol '>'.  This is how the data stream from cpio gets
+  to the tape drive - it is redirected to the output device
+  on the command line.  Likewise, input from the tape drive
+  is redirected to cpio with the '<' symbol.  Hopefully the
+  examples will make this clearer.
+  
+  Command Format: <output filenames> | cpio <options> >  <output device>
+            cpio <options> < <input device> <input filenames>
+  
+  Options:  o  -  copy files Out to tape
+            i  -  copy files In from tape
+            t  -  lisT the contents of the tape (must be used with the
+                  In option)
+            v  -  Verbose mode - print each filename as it's processed
+            d  -  create Directories as needed - this applies to the 
+                  In option only
+  
+  Examples: Let's assume that our tape device name is /dev/rst0.
+  
+            Our current working directory contains the following files:
+                jurassic%  ls
+                file1  file2  file3  file4
+  
+            We want to put just a few of  those files on tape:
+                jurassic%  echo "file2 file4" | cpio -ov > /dev/rst0
+                file2
+                file4
+                506 blocks
+  
+            We want to put all those files on tape:
+                jurassic%  ls | cpio -ov > /dev/rst0
+                file1
+                file2
+                file3
+                file4
+                626 blocks
+  
+            Now we want to see what is on the tape:
+                jurassic%  cpio -it < /dev/rst0
+                file1
+                file2
+                file3
+                file4
+                626 blocks
+            Maybe we need to restore all the files on the tape:
+                jurassic%   cpio -iv < /dev/rst0
+                file1
+                file2
+                file3
+                file4
+                626 blocks
+  
+            Or just a few:
+                jurassic%  cpio -iv < /dev/rst0 file2 file4
+                file2
+                file4
+                506 blocks
+  
+  
+  
+dump and restore:
+  Stands for dumping files to tape, and restoring them.
+  dump is very different from the other utilities because
+  it is filesystem oriented instead of file oriented.  You
+  can still restore individual files, but you can only dump
+  entire filesystems.  This makes it more suited to doing
+  system backups than individual file or directory backups,
+  since you would have to back up a whole filesystem just
+  to get the few files you really wanted.  dump and restore
+  are separate programs, unlike the other utilities we
+  cover which perform both functions.
+  
+  Dump schemes can get very complex.  There are 10
+  different dump levels, from 0 to 9, which determine which
+  files actually get backed up.  A level 0 dump contains
+  every file in the filesystem.  Each of the other levels
+  backs up only files which have changed during a certain
+  time period, which is determined by the level of the
+  dump.  Every Sys Admin has his or her own favorite
+  approach to this, and a discussion of  "the" perfect dump
+  scheme can take on a near-religious fervor.  We will not
+  worry about this here.  Our personal opinion is that as
+  long as your level 0 dump fits on one tape there is no
+  reason not to do one every time you do a backup.  Why
+  worry about which tape your file is on?  But we guarantee
+  that there are mighty hordes out there who do not agree
+  with us....
+  
+  Command Format:     dump <options> <device>
+  
+  Options:  dump level (a number from 0 to 9)
+            f  -  the device File to use will be specified
+                  (instead of using the default, which is rarely right)
+            d  -  tape Density (optional)
+            s  -  Size of the tape (optional)
+            b  -  Blocking factor (optional)
+  
+            The optional options are only needed when using an 8mm tape
+            drive.  Most UNIX systems still aren't able to sense the 
+            type of tape drive you're using and adjust accordingly.  
+            If you don't tell dump that it's using a very large capacity
+            tape drive, in many cases it will assume that you have a 
+            150 Mb 1/4" tape drive, and stop when it thinks it's about
+            to run off the end of the tape.  A bit of a waste of a 2.5
+            gigabyte tape!   But the numbers to use are not always 
+            clear.  The dump command we use on our Sun workstation
+            (SunOS 4.1.3) is 'dump 0dsbf 54000 6000 126 /dev/rst0
+            <filesystem name>'.  This was determined by several people 
+            through trial and error, and may not be "the" definitive
+            answer, but it seems to work.
+  
+            When using the options, be sure to keep the numbers in the 
+            same order as the options.  In our dump command d goes with
+            54000, s goes with 6000, b goes with 126 and f goes with 
+            /dev/rst0.  As with tar, f should be last.
+  
+            Another thing that's different about dump isthat you can 
+            put multiple dumps on a tape, and restore them  later.  In
+            order to do this it's important to use the non-rewinding 
+            name for your tape device.  Usually this is the same as the usual
+            name with an 'n' added to it, like /dev/nrst0, but ask your
+            Sys Admin to be sure.  If you do this, be sure to keep track
+            of which dump file is which!  Using the rewinding tape 
+            device for the last dump on the tape is handy, since it will
+            rewind the tape for you when it's done.
+  
+  Command Format:     restore <options> <device>
+  
+  Options:  i  -  Interactive (optional but highly recommended)
+            v  -  verbose (optional)
+            f  -  the device File to use will be specified
+                  (instead of using the default, which is rarely right)
+            s  -  the number of dump files to Skip before starting to 
+                  restore (optional)
+  
+            restore will read the directory of contents for the dump 
+            file and then give you a 'restore >' prompt.  At this 
+            prompt you may look at the dump file almost as though it 
+            were a filesystem on disk - you can use cd, pwd and ls to 
+            look at the file and directory names.  When you find a file
+            you wish to restore, execute 'add <filename>' to add it to 
+            the list of files to restore.  The filenames are always
+            relative to your current directory within restore.  If you
+            change your mind, 'delete <filename>' will remove the 
+            filename from the list.  When you are ready to start 
+            restoring, execute 'extract'.  To exit restore, execute
+            'quit'.
+  
+            The above description was for the interactive mode of 
+            restore.  If you wish, restore may be used like tar:  
+            restore xvf /dev/rst0, for example.
+  
+  Examples: Let's assume that our tape device name is /dev/rst0.
+  
+            We have the following filesystems mounted:
+                jurassic%  mount
+                /dev/sd0a on /  type 4.2  (rw)
+                /dev/sd1g on /usr  type 4.2  (rw)
+                /dev/sd1h on /files  type 4.2  (rw):
+  
+            We want to back up all those filesystems on tape:
+                jurassic%  dump 0vf  /dev/nrst0 /
+                <messages from dump -  too long to reproduce here>
+                jurassic%  dump 0vf  /dev/nrst0 /usr
+                <messages from dump>
+                jurassic%  dump 0vf /dev/rst0 /files
+                <messages from dump>
+                tape rewinds because rewinding tape device was used
+            Now we want to see what is on the tape:
+                jurassic%  restore ivf /dev/nrst0
+                restore>  ls
+                restore> quit
+                jurassic%  restore ivf  /dev/rst0
+                restore>  ls
+                restore> quit
+                tape rewinds
+                jurassic%  restore ivsf 2 /dev/rst0
+                restore skips first two dumps
+                restore>  ls
+                restore> quit
+  
+            Restoring all files from a dump tape is rare; this is 
+            usually done only when recovering from a major disk crash.
+            Restoring a few files is more commonly done:
+                jurassic%  restore ivf /dev/rst0
+                restore>  add file2
+                restore>  add file3
+                restore>  extract
+                restore>  quit
+  
+bar:
+  Stands for absolutely nothing.  The documentation says
+  "create tape archives", which pretty much leaves that 'b'
+  out in the cold.   bar is a Sun specific utility, and it
+  is not part of the new Solaris operating system.  It's
+  reason for existence was that it was just like tar but
+  would write to multiple tapes, which tar will not do.
+  That makes it perfect for floppies, since almost anything
+  worthwhile takes several floppies.  Those of you with pre-
+  Solaris Suns can refer to the description of tar;  the
+  device name for the floppy drive is /dev/rfd0.
+  
+
+This concludes our tour of UNIX backup commands.  The only
+thing left to cover is how to choose which one to use.  Most
+of it boils down to personal preference - although dump is
+most suited to doing full system backups, any of the backup
+utilities will work and many people prefer to use one of the
+others.  The following is our personal opinion of each
+utility;  it is by no means the definitive answer.
+
+tar/bar:  
+    advantages:    easy to use, handles individual files well.
+    disadvantages: tar can't handle multiple tapes, is more
+                   prone to failure since the archive is all one file.
+    best uses:     general backups, moving files from one system to 
+                   another.
+cpio:     
+    advantages:    fast, can use other programs to create list of files
+                   to backup.
+    disadvantages: cryptic, difficult to use, won't do multiple tapes.
+    best uses:     backups when the list of files to back up must be 
+                   created by another program, multi-tape backups.
+dump/restore:  
+    advantages:    very fast, can put multiple dumps on one tape.
+    disadvantages: have to back up the whole filesystem, restore can be
+                   slow if there's a lot on the tape.
+    best uses:     general backups.
+
+
+Copyright (C) 1993 by Mike Sisk

@@ -1,0 +1,190 @@
+Let's take a look at one of the most basic and misunderstood
+things about UNIX:  file permissions.  Incorrect file
+permissions have caused more problems for the UNIX novice
+than just about anything else.
+
+Before we start, however, a warning:  be very careful about
+changing file permissions when logged in as root.  Some
+system files will not work if their permissions are changed
+and you may have to reload the operating system if you
+recursively change permissions with the chmod, chown, or
+chgrp commands.
+
+Each user on a UNIX system has a unique account  user ID
+number (UID).   Each user also belongs to one or more
+groups.  A user's UID and default group are assigned in the
+/etc/passwd file.  The /etc/group file defines the groups
+that are available on the system.
+
+Each file in a UNIX file system belongs to one user and one
+group.  When a file is created, it's owner is the user who
+created it and it's group is the user's primary group or the
+group of the directory it is created in.
+
+For example, if I create a new drawing file in /files/dwgs
+called siteplan, the file is given mikes as the owner and
+staff as the group.  As the files owner, I am allowed to
+change the file's group with the chgrp (change group)
+command.  On systems without quotas, I could also change the
+ownership of the file with the chown (change owner) command.
+On systems with quotas, the superuser (the system
+administrator) is normally the only one with access to the
+chown command.
+
+A directory listing of a test sub directory reveals the
+following files:
+
+jurassic% pwd
+/files/home/mikes/test/test
+jurassic% ls -lg
+total 0
+---x--x--x  1 mikes    staff           0 Jul 28 16:11 111*
+--w--w--w-  1 mikes    staff           0 Jul 28 16:11 222
+--wx-wx-wx  1 mikes    staff           0 Jul 28 16:11 333*
+-r--r--r--  1 mikes    staff           0 Jul 28 16:11 444
+-r-xr-xr-x  1 mikes    staff           0 Jul 28 16:11 555*
+-rw-rw-rw-  1 mikes    staff           0 Jul 28 16:11 666
+-rwxrwxrwx  1 mikes    staff           0 Jul 28 16:11 777*
+jurassic%
+
+The l and g arguments to ls print the long listing and group
+information respectively.  The first field of the listing is
+the a set of 10 alphabetic characters.  The first character
+tells you the file's type.  For a normal file this character
+is a '-'.  For a directory, this character would be a 'd'.
+The next three bits report the owner's access, the next
+three the group access, and the last three report the access
+for everyone else.  A 'r' indicates that read access is
+allowed, a 'w' that write access is allowed, and a 'x' that
+execute access is allowed.
+
+The second field of the listing  indicates the number of
+links, the third field the owner, and the fourth field the
+group the file belongs to.  Next is the size of the file,
+the date and time of last modification, and then the
+filename.  An '*' after the name of the file indicates that
+the file is executable.
+
+Instead of saying "File 666 has owner read-write permission,
+group read-write permission, and everyone else read-write
+permission," UNIX hacks would report that file 666 is mode
+666.  Each number in the mode is a octal number representing
+the permissions of a file.  The first digit of the octal
+number is the permissions of the file's owner, the second of
+the group, and the third of everyone else.  A method does
+exist to calculate the correct octal numbers for each
+permission mode but it is easier to just remember this:
+
+1 - execute
+2 - write
+3 - write, execute
+4 - read
+5 - read, execute
+6 - read, write
+7 - read, write, execute
+
+These octal numbers are used by the chmod (change mode)
+command to change a file permissions.  For example:  to
+change the mode of a file to owner read-write-execute, group
+read-execute, and everyone else execute, you would use the
+following command:
+
+% chmod 751 filename
+
+We know that a newly created file will belong to the person
+who created it and the group that of the default group of
+the owner.  What about the file's mode?  It depends.
+Different versions of UNIX have subtle differences in the
+mode of the new file.  On SunOS, for example, the default
+umask of 022 is set by the init daemon when the machine
+boots.  The best way around this problem is to set an exact
+umask.  You can set your umask with either the umask command
+or by placing a umask statement in your shell startup files.
+The argument you pass to umask is the value you want
+inhibited when a file is created.  The argument is
+calculated by subtracting the numeric equivalent of the file
+mode you want from 777.  For example, to set your umask so
+all new files are of mode 764, compute 777 - 764  =  013;
+note this is octal math.  This is the value to pass to
+umask:
+
+% umask 013
+
+From now on all future files will be created with mode 764.
+
+A recent addition to UNIX is the concept of the sticky bit.
+UNIX permissions say that if a user has write access on a
+directory, they can rename or remove file there, even if the
+files don't belong to the user.  The way to prevent this is
+to set the sticky bit of the directory.  With the sticky bit
+set, only the file's owner, the directory's owner, and the
+superuser will be able to remove or rename a file within
+this directory.  Lets make a directory called world-writable
+directory called share and set it's sticky bit:
+
+jurassic% mkdir share
+jurassic% chmod 1777 share
+jurassic% ls -ld share
+drwxrwxrwt  2 mikes         512 Jul 30 18:43 share/
+jurassic%
+
+A 't' in place of the world execute flag indicates that the
+sticky bit is set.  Anybody will be able to create files in
+share but only the owner or the superuser will be able to
+remove them.
+
+Here is a common problem that occurs all the time:
+
+jurassic% /files/acad/acad
+/files/acad/acad: Permission denied.
+jurassic%
+
+Hmm...looks like a permissions problem, right?  Let's list
+the contents of /files/acad and look at the permissions:
+
+jurassic% ls -lag
+total 30
+drwxr-xr-x 14 root     staff         512 Jul 15 12:41 ./
+drwxr-xr-x 11 root     wheel         512 Jul 24 10:00 ../
+drwxr-xr-x  2 root     staff        1024 May 10 11:01 acad/
+drwxr-xr-x  9 root     staff         512 Dec 29  1992 adi/
+drwxr-xr-x  3 root     staff        1024 Apr 29 15:14 ads/
+drwxr-xr-x  3 root     staff         512 Oct 30  1992 api/
+drwxr-xr-x  2 root     staff         512 Oct 30  1992 ase/
+-rwxr-xr-x  1 root     staff         131 Sep  4  1992
+copyright*
+drwxr-xr-x  2 root     staff         512 Jun 29 18:59 drv/
+drwxr-xr-x  2 root     staff        2048 Jul 20 10:15 fonts/
+drwxr-xr-x  2 root     staff         512 Oct 30  1992
+igesfont/
+-rwxr-xr-x  1 root     staff       10307 Sep  4  1992
+installp*
+drwxr-xr-x  2 root     staff        1536 Apr 29 15:14
+sample/
+drwxr-xr-x  2 root     staff        1024 Oct 30  1992
+source/
+drwxr-xr-x  2 root     staff        2560 Jul 20 10:15
+support/
+drwxr-xr-x  3 root     staff         512 Oct 30  1992
+tutorial/
+jurassic%
+
+Ah...here is the problem.  We were trying to execute a
+directory!  By default the AutoCAD installation script
+creates a directory called acad under acad to contain the
+executables.  A better name would have been bin, but this is
+a problem you should be aware of.
+
+For more information on file permissions and the commands
+that affect them consult the man pages.  Also, a great new
+book has been published that no UNIX system administrator
+should be without.  "UNIX Power Tools" by Jerry Peek, Tim
+O'Reily, and Mike Loukides, an O'Reilly & Associates/Bantam
+Book has over 1000 pages of useful information and a CD-ROM
+containing many public domain utilities no system should be
+without.
+
+
+
+
+Copyright (C) 1993 by Mike Sisk

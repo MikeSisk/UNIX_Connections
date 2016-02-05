@@ -1,0 +1,226 @@
+This month's topic is the UNIX shell.
+
+The shell is the mechanism by which the user communicates
+with the UNIX operating system.
+A UNIX system can be thought of as a concentric set of
+layers.  In the very center is the actual hardware.  The
+second layer is the system kernel, commonly referred to as
+just the kernel.  The third layer is the shell.  The shell
+communicates with the UNIX kernel through system calls.  The
+final layer is the actual user.
+The user issues a command to the shell, which interprets it
+and either passes the user's request on to another
+application program or executes the request itself.
+
+Let's look at an example.  To get a directory listing of all
+files ending in *.dwg:
+
+% ls *.dwg
+
+In this case the shell finds the filenames, makes a list of
+them, and then calls the ls command to print the list.
+
+Why in the world would someone design a operating system
+this way?  There are several good reasons to do this.  One
+is that an individual user's login account may be structured
+to protect the user and the system from each other.
+Second, it is very easy to provide several different
+interfaces (via different shells) without having to rewrite
+the UNIX kernel.  Several different shells are available for
+UNIX systems.  These include Bourne, C, and Korn.  Of  these
+the C shell (pronounced sea-shell) is most commonly used by
+programmers, while the Bourne shell tends to be preferred by
+non-technical users, though there are always exceptions .
+The typical UNIX AutoCAD user should know a little about
+each.  The Korn shell is less popular, though those who use
+it tend to be especially loyal to it.  Since neither of the
+authors are particularly well versed in korn, the following
+examples will concentrate on the Bourne and C shells.
+
+How do you tell what shell you're using?  The easiest way is
+to look at your prompt;  the C shell usually uses the %
+character for the prompt and the Bourne shell uses the $.
+This only works, however, if your prompt has not been
+changed by the administrator who set up your account.  In
+this case, execute the ps command (no arguments).  You will
+see sh for the Bourne shell or csh for the C shell.  The
+shell you use by default when you log in is determined by
+the last field of your entry in the system /etc/passwd file.
+
+If you need to change shells temporarily type 'csh' to
+change to a C shell or 'sh' to change to a Bourne shell.
+
+Both shells offer complete programming languages within
+themselves that enable you to produce shell scripts.  These
+are similar to MS-DOS batch files but offer much more.  A
+complete description of what the shell can do is beyond the
+scope of this article, but several good books on the subject
+will be listed at the end.
+
+One common mistake many beginning UNIX users make is that
+they assume that UNIX uses wildcards the same way MS-DOS
+does.  Although they are very similar, there are subtle
+differences that can cause major problems.  For example the
+following is perfectly legal in MS-DOS:
+
+ Volume in drive H is jurassic
+ Directory of H:\DOC\CADALYST
+
+.            <DIR>     06-29-93   5:35p
+..           <DIR>     06-29-93  10:42a
+SHELL    DOC      3369 06-27-93   3:45p
+SPARC1   DOC     14222 01-08-93   5:59p
+        5 file(s)      20949 bytes
+                   427458560 bytes free
+
+[triassic]-H:\DOS\CADALYST> COPY *.doc *
+
+
+In MS-DOS this works the way you would expect it to,
+resulting in:
+
+ Volume in drive H is jurassic
+ Directory of H:\DOC\CADALYST
+
+.            <DIR>     06-29-93   6:03p
+..           <DIR>     06-29-93  10:42a
+SHELL    DOC      3369 06-27-93   3:45p
+SPARC1   DOC     14222 01-08-93   5:59p
+SHELL             3369 06-27-93   3:45p
+SPARC1           14222 01-08-93   5:59p
+        7 file(s)      38540 bytes
+                   427442176 bytes free
+
+If you then executed (in MS-DOS):
+
+[triassic]-H:\DOS\CADALYST> del *
+
+This would delete the files SHELL and SPARC1 and leave all
+the files with the DOC extension intact.
+
+There are two areas of difference in UNIX.  First, you
+couldn't do something like the COPY command above.  In the
+MS-DOS example, the COPY command is executed along with it's
+arguments exactly as you typed them.  It then determines
+what you wanted to do, and does it.  In UNIX, the shell
+expands the wildcards you entered before it executes the cp
+command (the UNIX equivalent of  COPY).  So if you were to
+try to do the same thing in UNIX, your command (cp *.doc *)
+would be turned into something quite different before it was
+executed:  cp shell.doc sparc1.doc shell.doc sparc1.doc.
+That is, the *.doc
+would be expanded, and so would the *.  In reality, however,
+this example will not execute, because the second argument
+to cp must be either a filename or a directory, and the
+second argument in this case is expanded into two filenames.
+
+The other difference being illustrated here is that UNIX
+does not support the notion of a filename extension the way
+MS-DOS does.    The command 'del *' above only deleted the
+files which had no extensions in their names.  But if you
+try this in UNIX:
+
+jurassic% pwd
+/files/home/mikes/doc/cadalyst
+jurassic% ls -l
+total 41
+-rw-rw-rw-  1 mikes        3369 Jun 27 15:45 shell
+-rw-rw-rw-  1 mikes        3369 Jun 27 15:45 shell.doc
+-rw-rw-rw-  1 mikes       14222 Jan  8 16:59 sparc1
+-rw-rw-rw-  1 mikes       14222 Jan  8 16:59 sparc1.doc
+jurassic% rm *
+jurassic% ls -l
+total 0
+
+Everything in the current directory has been deleted!
+Unlike most operating systems, UNIX sees the "." (period) as
+just another character.  In fact, you can have several "."
+characters in one filename.  There is one exception,
+however.  If the first character of a filename starts with
+"." UNIX considers that file to be hidden, and does not
+display it in regular directory listings (with the ls
+command).
+
+Another related difference that most users will run into
+fairly quickly is that you can't change just the extensions
+of a group of filenames the way you can in MS-DOS.  If you
+were about to start working on a group of document files
+with names ending in .DOC, you might want to protect
+yourself by making copies of all of them before you started.
+In MS-DOS, you would do this by executing 'COPY *.DOC
+*.SAV'.  Unfortunately, there is no good easy way to do this
+in UNIX.  It's possible to write a small C shell script to
+do it, but otherwise you'd have to rename each of them
+individually.
+
+For the most part, the Bourne shell and the C shell are
+about the same.  As long as you are just executing simple
+commands and applications (like AutoCAD), it doesn't really
+matter which one you use.  There are, however, several big
+advantages of the C shell:  it's history and alias
+capabilities.  If your environment is set up properly, you
+can execute the 'history' command to see a list of the last
+commands you've executed.  How many you see is determined by
+how your shell was set up.  Each command is numbered in the
+list, and you can execute the same command again by
+referencing it by number.  You can also do some editing of
+the command before it is executed.  With alias, you can give
+one short name to a much longer command.  A very common
+alias is 'ls -l' abbreviated to 'll'.  This is one of the
+protective mechanisms mentioned earlier:  you can alias 'rm
+-i' to 'rm', so that when the user tries to delete a file
+they will always be asked to confirm it's deletion by
+entering 'y'.   You can also use the aliasing to assign UNIX
+commands to DOS names.  For example, you can alias 'ls -F'
+to 'dir'.  If this sounds intriguing, a book on the C shell
+will tell you all you need to know to use this powerful
+feature.
+
+
+Now on to something AutoCAD related.  As you can see from
+the example above, UNIX pathnames can be quite long.  Unlike
+the MS-DOS method of using different drives (e.g. C:, D:,
+etc.) to store files, UNIX just uses one directory
+structure.  For example, a drawing file might have the
+following name:
+
+/files/dwgs/9305/300/ccb-21.dwg
+
+Let's say that this same sub-directory has over 50 AutoCAD
+drawings that need to have minor edits made.  Typing the
+filenames with the full path each time would be a real pain.
+AutoCAD Release 12 provides a solution through the use of
+the SETENV command.
+
+Consider this sequence in the AutoCAD command window:
+
+Command: setenv
+Enter variable name:  dir
+Enter Value: /files/dwgs/9305/300
+dir=/files/dwgs/9305/300
+
+Command: open
+Enter name of drawing:  $dir/ccb-1
+
+The file loaded would be /files/dwgs/9305/300/ccb-1.dwg.
+
+
+The shell can be a powerful tool when thoroughly understood.
+There are many good books on the market which cover the
+different shells, should you wish to learn more about the
+UNIX shells and their programming languages.  Here are a few
+suggestions (in no particular order), though these are by no
+means the only ones worth reading:
+
+"The UNIX Shell Programming Language" by Rod Manis and Marc
+H. Meyer.  ISBN 0-672-22497-6
+"UNIX Shell Programming" by Lowell Jay Arthur.  ISBN 0-471-
+51821-2
+"UNIX Power Tools" by Jerry Peek, Tim O'Reilly, and Mike
+Loukides.  ISBN 0-553-35402-7
+"Peter Norton's Guide to UNIX" by Peter Norton and Harley
+Hahn.  ISBN 0-553-35260-1
+
+
+
+Copyright (C) 1993 by Mike Sisk

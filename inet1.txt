@@ -1,0 +1,97 @@
+This month's article will be the first part of a two part
+series addressing the Internet.  This month we'll take a
+look at what the Internet is and isn't and next month we'll
+talk about the resources for AutoCAD users available on the
+Internet and how to access them.
+
+First, what is the Internet?  The Internet is a large
+network of networks communicating with each other with
+TCP/IP.  The Internet was originally established in 1983 and
+was sponsered by the Defense Advanced Research Project
+Agency (DARPA).
+
+Orginally intended to connect research institutions and
+government agencies, the Internet has now grown to encompass
+nearly every school and large business in the nation and
+many others world wide.   The various connections between
+the networks usually takes the form of 56K leased lines and
+T1 lines (1Mbps).  Some T3 lines (45Mbps) also exist between
+major locations.  The cost of these lines are paid by the
+institutions that connect to them.
+
+Another type of network that is often confused with the
+Internet is UUCP (Unix to Unix CoPy).  UUCP is a loose
+association of systems running UNIX that communicated with
+each other with the UUCP protocol.  Many small sites connect
+to the Internet through UUCP and really aren't Internet
+sites (presently, Autodesk is one such company that falls
+into this catagory).  More on UUCP networks later.
+
+Why would a company choose not to connect directly to the
+Internet?  Cost and security.  The leased lines to connect
+to the Internet can cost upwards of $5,000 per month.  Also,
+to ensure site security, firewall machines must be
+installed.  Firewall machines are dedicated gateway machines
+with special security precautions to protect the rest of the
+companies network from crackers.  Because of this, the cost
+of equipment and administration of a direct Internet link
+can only be justified in the largest companies.
+
+Back to the Internet:  Every site on the Internet must have
+a unique id or domain name.  The domain name tells you the
+name of a system or location and what type of organization
+it is.  For example, Autodesk's domain name is:
+
+autodesk.com
+
+The first part of the domain tells you the name of the
+company:  autodesk.  The second part or trailing domain
+tells you the type of organization:  com.  Here are the
+several most common trailing domains:
+
+com       Usually a company or commercial institution.
+edu       An educational instutuion.
+gov       A government site.
+mil       A military site.
+org       Private organizations that don't fit one of the
+other domains.  Example:  eff.org for the
+               Electronit Frontier Foundation.
+
+But wait a minute.  If Autodesk isn't on the Internet
+directly, how can it have a domain name?  For the purposes
+of email, sites not on the Internet can use domain names to
+have Internet addressed mail sent to them via UUCP from an
+Internet host.   More on this later under UUCP.
+
+The proper term for a site's domain name is its Fully
+Qualified Domain Name.  It is selected to give a clear
+indication of the site and must be registered with the NIC
+(Network Information Center) Domain Registar.
+
+Every machine directly on the Internet must have a unique
+address called its Internet Number or it IP Address.  An IP
+Address is a 32 bit number normally represented as four
+numbers or octets joined by periods.  An example of a IP
+address is:
+
+200.001.001.001
+
+IP Address are assigned by the NIC to ensure that every
+machine on the internet has a unique address.
+
+
+
+UUCP network are usually used only for the tranmission of
+email and USENET newsfeeds.  Although not needed for UUCP,
+most UUCP sites use a Fully Qualified Domain Name and
+receive thier mail from a Internet site.  Internet sites
+have maps that contain the names of every Fully Qualifed
+Domain Name and a routing table of how the mail gets to
+site.  In the case of a UUCP site, the maps would list their
+Internet Host as the destiniation of the Internet Mail and
+that Host would inturn process the mail fom transmission to
+the final site through the UUCP protocal.
+
+
+
+Copyright (C) 1993 by Mike Sisk
